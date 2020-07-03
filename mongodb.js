@@ -12,4 +12,12 @@ mongo_client.connect(connection_url, {useNewUrlParser: true}, (error, client) =>
     }
 
     console.log('connected');
+
+    // don't have to actually create a db just can use reference like this
+    const db = client.db(database_name);
+    // creating a collection
+    db.collection('users').insertOne({
+        name: 'Santosh',
+        age: 24
+    });
 });
