@@ -10,35 +10,59 @@ const port = process.env.PORT || 3000;
 // this allows automatic parsing of JSON data being sent
 app.use(express.json());
 
-app.post('/users', (req, res) => {
+app.post('/users', async(req, res) => {
     const user = new User(req.body);
-
-    user.save().then(() => {
+    try {
+        await user.save();
         res.status(201).send(user);
-    }).catch(() => {
-        res.status(400).send(error);
-    })
+    } catch(e) {
+        res.status(401).send();
+    }
+
+    // user.save().then(() => {
+    //     res.status(201).send(user);
+    // }).catch(() => {
+    //     res.status(400).send(error);
+    // });
 });
 
-app.get('/users', (req, res) => {
-    User.find({}).then((users) => {
+app.get('/users', async(req, res) => {
+    try{
+        const users = await User.find({});
         res.send(users);
-    }).catch((e) => {
+    } catch(e) {
         res.status(500).send();
-    })
+    }
+
+    // User.find({}).then((users) => {
+    //     res.send(users);
+    // }).catch((e) => {
+    //     res.status(500).send();
+    // });
 });
 
-app.get('/users/:id', (req, res) => {
+app.get('/users/:id', async(req, res) => {
     const userId = req.params.id;
     console.log(userId);
-    User.findById(userId).then((user) => {
+    try{
+        const user = await User.findById(userId);
         if(!user) {
             return res.status(404).send();
         }
         res.send(user);
-    }).catch((e) => {
+    } catch(e) {
         res.status(500).send();
-    })
+    }
+
+    // console.log(userId);
+    // User.findById(userId).then((user) => {
+    //     if(!user) {
+    //         return res.status(404).send();
+    //     }
+    //     res.send(user);
+    // }).catch((e) => {
+    //     res.status(500).send();
+    // });
 });
 
 app.post('/tasks', (req, res) => {
