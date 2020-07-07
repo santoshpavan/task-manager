@@ -43,6 +43,27 @@ app.get('/users/:id', async(req, res) => {
     }
 });
 
+app.patch('/users/:id', async(req, res) => {
+    const userId = req.params.id;
+    //dealing with invalid update request - an update for non-existing field
+    const fieldPresent = ['age','name','email','password'];
+    const fieldsUpdated = Object.keys(req.body);
+    const validUpdate = fieldsUpdated.every((field) => fieldPresent.includes(field)); //returns true if only it's true for all
+    if(!validUpdate) { //not a valid update
+        return res.status(400).send({error: 'Invalid update request'});
+    }
+
+    try {
+        const user = await User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true});
+        if(!user) {
+            res.status(404).send();
+        }
+        res.send(user);
+    } catch(e) {
+        res.status(400).send(e);
+    }
+});
+
 app.post('/tasks', async(req, res) => {
     const task = new Task(req.body);
 
@@ -50,7 +71,7 @@ app.post('/tasks', async(req, res) => {
         await task.save();
         res.status(201).send(task);
     } catch(e) {
-        res.status(400).send();
+        res.status(400).send({error: 'Invalid update request'});
     }
 });
 
@@ -73,6 +94,28 @@ app.get('/tasks/:id', async(req, res) => {
         res.send(task);
     } catch(e) {
         res.send(500).send();
+    }
+});
+
+app.patch('/tasks/:id', async(req, res) => {
+    const taskId = req.params.id;
+    // checking for valid updates
+    const allowedUpdates = ['description', 'completed'];
+    const requestedUpdates = Object.keys(req.body);
+    const validUpdate = requestedUpdates.every((field) => allowedUpdates.includes(field));
+    if(!validUpdate) {
+        res.status(400).send({error: 'Invalid update request'});
+    }
+
+    try{
+        const task = await Task.findByIdAndUpdate(taskId, req.body, {new: true, runValidators: true});
+        if(!task) {
+            return res.status(404).send();
+        }
+
+        res.send(task);
+    } catch(e) {
+        res.status(400).send();
     }
 });
 
