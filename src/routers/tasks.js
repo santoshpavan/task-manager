@@ -48,11 +48,14 @@ router.patch('/tasks/:id', async(req, res) => {
     }
 
     try{
-        const task = await Task.findByIdAndUpdate(taskId, req.body, {new: true, runValidators: true});
+        // updating so that middleware is not ingnored
+        const task = await Task.findById(taskId);
         if(!task) {
             return res.status(404).send();
         }
-
+        requestedUpdates.forEach((updateField) => task[updateField] = req.body[updateField]);
+        await task.save();
+        
         res.send(task);
     } catch(e) {
         res.status(400).send();
