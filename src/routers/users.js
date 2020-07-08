@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/user');
+const { update } = require('../models/user');
 
 // creating a new router
 const router = new express.Router();
@@ -43,15 +44,21 @@ router.patch('/users/:id', async(req, res) => {
     const fieldPresent = ['age','name','email','password'];
     const fieldsUpdated = Object.keys(req.body);
     const validUpdate = fieldsUpdated.every((field) => fieldPresent.includes(field)); //returns true if only it's true for all
+    
     if(!validUpdate) { //not a valid update
         return res.status(400).send({error: 'Invalid update request'});
     }
 
     try {
-        const user = await User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true});
+        // changing the update being made as it normally bypasses the mongoose
+        const user = await User.findById(userId);
         if(!user) {
             res.status(404).send();
         }
+        // this way it goes through mongoose and uses the schema change
+        fieldsUpdated.forEach((updateField) => user[updateField] = req.body[updateField]);
+        await user.save();
+
         res.send(user);
     } catch(e) {
         res.status(400).send(e);
