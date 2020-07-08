@@ -43,6 +43,21 @@ const userSchema = new mongoose.Schema( {
     }
 });
 
+// creating a user defined method
+userSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne( {email} );
+    if (!user) {
+        throw new Error('Unable to login');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        throw new Error('Unable to login');
+    }
+
+    return user;
+}
+
 // using Middleware to do stuff before or after an event
 // pre here is for before and post is after the event
 userSchema.pre('save', async function (next) { //not using arrow as it cannot bind "this"

@@ -1,6 +1,5 @@
 const express = require('express');
 const User = require('../models/user');
-const { update } = require('../models/user');
 
 // creating a new router
 const router = new express.Router();
@@ -12,6 +11,15 @@ router.post('/users', async(req, res) => {
         res.status(201).send(user);
     } catch(e) {
         res.status(401).send();
+    }
+});
+
+router.post('/users/login', async(req, res) => {
+    try {
+        const user = await User.findByCredentials(req.body.email, req.body.password);
+        res.send(user);
+    } catch(e) {
+        res.status(404).send();
     }
 });
 
