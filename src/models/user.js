@@ -50,6 +50,17 @@ const userSchema = new mongoose.Schema( {
     }]
 });
 
+// removing tokens and password for privacy, before sending
+userSchema.methods.toJSON = function () {
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+}
+
 // creating a user defined method. Methods -> Instance Method
 userSchema.methods.generateAuthToken = async function() {
     const user = this;
