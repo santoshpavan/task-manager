@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/user');
-
+const auth = require('../middlewares/auth');
 // creating a new router
 const router = new express.Router();
 
@@ -27,7 +27,8 @@ router.post('/users/login', async(req, res) => {
     }
 });
 
-router.get('/users', async(req, res) => {
+// auth-middleware runs first and then the route handler runs
+router.get('/users', auth, async(req, res) => {
     try{
         const users = await User.find({});
         res.send(users);
