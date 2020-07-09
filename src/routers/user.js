@@ -52,7 +52,7 @@ router.post('/users/logoutAll', auth, async(req, res) => {
 });
 
 // auth-middleware runs first and then the route handler runs
-router.get('/users/me', auth, async(req, res) => {
+router.get('/users/myProfile', auth, async(req, res) => {
     res.send(req.user);
 });
 
@@ -97,14 +97,9 @@ router.patch('/users/:id', async(req, res) => {
     }
 });
 
-router.delete('/users/:id', async(req, res) => {
-    const userId = req.params.id;
+router.delete('/users/myProfile', auth, async(req, res) => {
     try {
-        const user = await User.findByIdAndDelete(userId);
-        if(!user) {
-            return res.status(404).send();
-        }
-
+        const user = await User.findByIdAndDelete(req.user._id);
         res.send(user);
     } catch(e) {
         res.status(500).send();
