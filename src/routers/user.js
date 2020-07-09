@@ -21,9 +21,33 @@ router.post('/users/login', async(req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         // it is not for "User" but for "user"
         const token = await user.generateAuthToken();
-        res.send(user);
+        res.send({user, token});
     } catch(e) {
         res.status(404).send();
+    }
+});
+
+router.post('/users/logout', auth, async(req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((tokenObject) => {
+            return tokenObject.token != req.token; //false for the present token, removing it
+        });
+
+        await req.user.save();
+        res.send(); //sending 200-ok status
+    } catch(e) {
+        res.status(500).send();
+    }
+});
+
+router.post('/users/logoutAll', auth, async(req, res) => {
+    try {
+        req.user.tokens = [];
+
+        await req.user.save();
+        res.send(); //sending 200-ok status
+    } catch(e) {
+        res.status(500).send();
     }
 });
 
