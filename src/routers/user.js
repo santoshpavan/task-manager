@@ -70,8 +70,7 @@ router.get('/users/:id', async(req, res) => {
     }
 });
 
-router.patch('/users/:id', async(req, res) => {
-    const userId = req.params.id;
+router.patch('/users/myProfile', auth, async(req, res) => {
     //dealing with invalid update request - an update for non-existing field
     const fieldPresent = ['age','name','email','password'];
     const fieldsUpdated = Object.keys(req.body);
@@ -83,10 +82,7 @@ router.patch('/users/:id', async(req, res) => {
 
     try {
         // changing the update being made as it normally bypasses the mongoose
-        const user = await User.findById(userId);
-        if(!user) {
-            res.status(404).send();
-        }
+        const user = await User.findById(req.user._id);
         // this way it goes through mongoose and uses the schema change
         fieldsUpdated.forEach((updateField) => user[updateField] = req.body[updateField]);
         await user.save();
