@@ -49,6 +49,8 @@ const userSchema = new mongoose.Schema( {
             required: true
         }
     }]
+}, {
+    timestamps:  true
 });
 
 // a Virtual - not stored in DB; is a relation.
