@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('../models/task');
 
 // creating a new schema for User
 const userSchema = new mongoose.Schema( {
@@ -106,6 +107,13 @@ userSchema.pre('save', async function (next) { //not using arrow as it cannot bi
     }
 
     next(); //if this is not called User never gets saved and it gets hung here
+});
+
+// middleware for Cascading Deletion
+userSchema.pre('remove', async function (next) {
+    const user = this;
+    await Task.deleteMany( {owner: user._id} );
+    next();
 });
 
 // the first argument is the Model name and the second argument is the schema
