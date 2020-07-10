@@ -19,12 +19,21 @@ router.post('/tasks', auth, async(req, res) => {
 
 // GET /tasks?completed=true
 // GET /tasks?limit=10&skip=20
+// GET /tasks?sortBy=createdAt_desc
 router.get('/tasks', auth, async(req, res) => {
-    const match = {}
+    const match = {};
+    const sort = {};
+
     if(req.query.completed) {
         // the query has a string and not a boolean
         match.completed = req.query.completed === 'true';  
     }
+    if(req.query.sortBy) {
+        const parts = req.query.sortBy.split('_');
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+        console.log(sort);
+    }
+
     try{
         // populating the tasks part of the users with its tasks
         await req.user.populate({
@@ -33,7 +42,8 @@ router.get('/tasks', auth, async(req, res) => {
             options: {
                 //works only when there is a limit value
                 limit: parseInt(req.query.limit),
-                skip: parseInt(req.query.skip)
+                skip: parseInt(req.query.skip),
+                sort
             }
         }).execPopulate();
         res.send(req.user.tasks);
