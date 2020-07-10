@@ -17,29 +17,32 @@ router.post('/tasks', auth, async(req, res) => {
     }
 });
 
-router.get('/tasks', async(req, res) => {
+router.get('/tasks', auth, async(req, res) => {
     try{
-        const tasks = await Task.find({});
+        const tasks = await Task.find( {owner: req.user._id} );
         res.send(tasks);
     } catch(e) {
         res.status(500).send();
     }
 });
 
-router.get('/tasks/:id', async(req, res) => {
+router.get('/tasks/:id', auth, async(req, res) => {
     const taskId = req.params.id;
+    // console.log(taskId);
     try {
-        const task = await Task.findById(taskId);
+        // const task = await Task.findById(taskId);
+        const task = await Task.findOne( {_id: taskId, owner: req.user._id} );
         if(!task) {
             return res.status(404).send();
         }
+
         res.send(task);
     } catch(e) {
-        res.send(500).send();
+        res.status(500).send();
     }
 });
 
-router.patch('/tasks/:id', async(req, res) => {
+router.patch('/tasks/:id', auth, async(req, res) => {
     const taskId = req.params.id;
     // checking for valid updates
     const allowedUpdates = ['description', 'completed'];
@@ -51,7 +54,7 @@ router.patch('/tasks/:id', async(req, res) => {
 
     try{
         // updating so that middleware is not ingnored
-        const task = await Task.findById(taskId);
+        const task = await Task.findOne( {_id: taskId, owner: req.user._id} );
         if(!task) {
             return res.status(404).send();
         }
@@ -64,10 +67,10 @@ router.patch('/tasks/:id', async(req, res) => {
     }
 });
 
-router.delete('/tasks/:id', async(req, res) => {
+router.delete('/tasks/:id', auth, async(req, res) => {
     const taskId = req.params.id;
     try{
-       const task = await Task.findByIdAndDelete(taskId);
+       const task = await Task.findOneAndDelete( {_id: taskId, owner: req.user._id} );
        if(!task) {
            return res.status(404).send();
        }

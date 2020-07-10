@@ -50,6 +50,13 @@ const userSchema = new mongoose.Schema( {
     }]
 });
 
+// a Virtual - not stored in DB; is a relation.
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+});
+
 // removing tokens and password for privacy, before sending
 userSchema.methods.toJSON = function () {
     const user = this;
