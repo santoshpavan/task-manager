@@ -31,7 +31,6 @@ router.get('/tasks', auth, async(req, res) => {
     if(req.query.sortBy) {
         const parts = req.query.sortBy.split('_');
         sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
-        console.log(sort);
     }
 
     try{
