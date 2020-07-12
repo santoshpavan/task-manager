@@ -2,7 +2,6 @@
 const express = require('express');
 const userRouter = require('./routers/user');
 const taskRouter = require('./routers/task');
-const { translateAliases } = require('./models/task');
 require('./db/mongoose'); //mangoose connects to the db
 
 const app = express();
