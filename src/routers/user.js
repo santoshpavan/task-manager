@@ -1,8 +1,8 @@
 const express = require('express');
+const sharp = require('sharp');
 const User = require('../models/user');
 const auth = require('../middlewares/auth');
 const multer = require('multer');
-const { ReplSet } = require('mongodb');
 // creating a new router
 const router = new express.Router();
 
@@ -121,7 +121,8 @@ const upload=  multer({
 
 // uploading the file
 router.post('/users/myProfile/avatar', auth, upload.single('avatar'), async(req, res) => {
-    req.user.avatar = req.file.buffer; //file.buffer is here since dest is remove above
+    const buffer = await sharp(req.file.buffer).resize( {width: 250, height: 250 }).png().toBuffer();
+    req.user.avatar = buffer;
     await req.user.save();
     res.send();
 }, (error, req, res, next) => { //this format of args tells that this is for error handling
