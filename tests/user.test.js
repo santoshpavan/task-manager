@@ -4,6 +4,7 @@ const User = require('../src/models/user');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { send } = require('@sendgrid/mail');
+const { resource } = require('../src/app');
 
 // generating a new ID using mongoose
 const userOneID = new mongoose.Types.ObjectId();
@@ -24,18 +25,38 @@ beforeEach(async() => {
 
 test('Should signup a new user', async () => {
     // supertest supports asynchronous actions
-    await request(app).post('/users').send({
+    const response = await request(app).post('/users').send({
         name: 'Santosh',
         email: 'santosh@example.com',
         password: 'Santosh123'
     }).expect(201); //201 status expected
+
+    // Assert that the database was changed correctly
+    const user = await User.findById(response.body.user._id);
+    expect(user).not.toBeNull();
+
+    // Assertions about the response
+    expect(response.body).toMatchObject({
+        user: {
+            name: 'Santosh',
+            email: 'santosh@example.com'
+        },
+        token: user.tokens[0].token
+    });
+
+    // Asserting that the password is not saved as plain text
+    expect(user.password).not.toBe(response.body.user.password);
 });
 
 test('Should login existing user', async() => {
-    await request(app).post('/users/login').send({
+    const response = await request(app).post('/users/login').send({
         email: userOne.email,
         password: userOne.password
     }).expect(200);
+
+    const user = await User.findById(userOneID);
+    // Asserting that the tokens will be the same
+    expect(response.body.token).toBe(user.tokens[1].token);
 });
 
 test('Should not login a non-existent user', async() => {
@@ -66,6 +87,10 @@ test('Should delete account for authenticated user', async() => {
         .set('Authorization', `Bearer ${userOne.tokens[0].token}`) //authorization header
         .send()
         .expect(200);
+    
+    const user = await User.findById(userOneID);
+    // Asserting that the user is deleted in DB
+    expect(user).toBeNull();
 });
 
 test('Should not delete account for unauthenticated user', async() => {
