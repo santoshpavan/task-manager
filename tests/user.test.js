@@ -1,11 +1,20 @@
 const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/models/user');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const { send } = require('@sendgrid/mail');
 
+// generating a new ID using mongoose
+const userOneID = new mongoose.Types.ObjectId();
 const userOne = {
+    _id: userOneID,
     name: 'Kira',
     email: 'kira@example.com',
-    password: 'Kira123'
+    password: 'Kira123',
+    tokens: [{
+        token: jwt.sign({_id: userOneID}, process.env.JWT_SECRET)
+    }]
 }
 
 beforeEach(async() => {
@@ -34,4 +43,34 @@ test('Should not login a non-existent user', async() => {
         email: userOne.email,
         password: 'Keka'
     }).expect(400);
+});
+
+test('Should get profile for authenticated user', async() => {
+    await request(app)
+        .get('/users/myProfile')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`) //authorization header
+        .send()
+        .expect(200);
+});
+
+test('Should not get profile for unauthenticated user', async() => {
+    await request(app)
+        .get('/users/myProfile')
+        .send()
+        .expect(401);
+});
+
+test('Should delete account for authenticated user', async() => {
+    await request(app)
+        .delete('/users/myProfile')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`) //authorization header
+        .send()
+        .expect(200);
+});
+
+test('Should not delete account for unauthenticated user', async() => {
+    await request(app)
+        .delete('/users/myProfile')
+        .send()
+        .expect(401);
 });
