@@ -4,7 +4,8 @@ const User = require('../src/models/user');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { send } = require('@sendgrid/mail');
-const { resource } = require('../src/app');
+const { resource, response } = require('../src/app');
+const e = require('express');
 
 // generating a new ID using mongoose
 const userOneID = new mongoose.Types.ObjectId();
@@ -98,4 +99,39 @@ test('Should not delete account for unauthenticated user', async() => {
         .delete('/users/myProfile')
         .send()
         .expect(401);
+});
+
+test('Should upload avatar image', async() => {
+    await request(app)
+        .post('/users/myProfile/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+        .expect(200);
+    
+    const user = await User.findById(userOneID);
+    expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test('Should update valid user fields', async() => {
+    await request(app)
+        .patch('/users/myProfile')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            name: 'Kira'
+        })
+        .expect(200);
+   
+    const user = await User.findById(userOneID);
+    // Assertion that the user name has changed
+    expect(user.name).toBe('Kira');
+});
+
+test('Should not update invalid user fields', async() => {
+    await request(app)
+        .patch('/users/myProfile')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            phone: '900900900'
+        })
+        .expect(400);
 });
