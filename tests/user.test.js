@@ -1,28 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/models/user');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const { send } = require('@sendgrid/mail');
-const { resource, response } = require('../src/app');
-const e = require('express');
 
-// generating a new ID using mongoose
-const userOneID = new mongoose.Types.ObjectId();
-const userOne = {
-    _id: userOneID,
-    name: 'Kira',
-    email: 'kira@example.com',
-    password: 'Kira123',
-    tokens: [{
-        token: jwt.sign({_id: userOneID}, process.env.JWT_SECRET)
-    }]
-}
+const { userOneID, userOne, setupDatabase } = require('./fixtures/db');
 
-beforeEach(async() => {
-    await User.deleteMany();
-    await new User(userOne).save();
-})
+beforeEach(setupDatabase);
 
 test('Should signup a new user', async () => {
     // supertest supports asynchronous actions
