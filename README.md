@@ -19,3 +19,5 @@ The following features were implemented as part of the project.
 * Implemented pagination, filtering and sorting of the tasks for the user.
 
 * Implemented email notification feature for the changes being performed on the tasks using the [Sendgrid](https://sendgrid.com/docs/for-developers/sending-email/quickstart-nodejs/) service.
+
+* Performed automated testing of the application using Jest testing framework.
